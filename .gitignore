@@ -1,0 +1,4 @@
+config.py
+*.session
+__pycache__
+downloads
