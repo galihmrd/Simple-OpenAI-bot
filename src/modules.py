@@ -4,9 +4,9 @@ from pyrogram import Client, filters
 from config import OPEN_AI_API
 
 
-async def openAI(prompt)
+async def openAI(self)
     openai.api_key = OPEN_AI_API
-    response = openai.Completion.create(model="text-davinci-003", prompt="Say this is a test", temperature=0, max_tokens=300)
+    response = openai.Completion.create(model="text-davinci-003", prompt=self, temperature=0, max_tokens=300)
     await message.reply(response["choices"][0]["text"])
 
 @Client.on_message(filters.command("tanya"))
