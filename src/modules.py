@@ -20,7 +20,7 @@ async def tanyabot(client, message):
        msg = await message.reply("Processing...")
        await openAI(prompt, msg)
     elif replied.text:
-       input = prompt + replied.text
+       input = prompt + " " + replied.text
        msg = await message.reply("Processing...")
        await openAI(input, msg)
 
