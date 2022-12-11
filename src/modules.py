@@ -1,7 +1,7 @@
 import os
 import openai
 from pyrogram import Client, filters
-from config import OPEN_AI_API
+from config import OPEN_AI_API, USERNAME_BOT
 
 
 async def openAI(self, msg):
@@ -12,12 +12,17 @@ async def openAI(self, msg):
        pass
     await msg.edit(response["choices"][0]["text"])
 
-@Client.on_message(filters.command("tanya") & filters.group)
+@Client.on_message(filters.text & filters.group)
 async def tanyabot(client, message):
-    prompt = " ".join(message.command[1:])
-    msg = await message.reply("Processing...")
-    await openAI(prompt, msg)
-
+    prompt = message.text
+    replied = message.reply_to_message
+    if message.text startswith(f"@{USERNAME_BOT"):
+       msg = await message.reply("Processing...")
+       await openAI(prompt, msg)
+    elif replied.text:
+       input = prompt + replied.text
+       msg = await message.reply("Processing...")
+       await openAI(input, msg)
 
 @Client.on_message(filters.text & filters.private)
 async def tanyabot_priv(client, message):
