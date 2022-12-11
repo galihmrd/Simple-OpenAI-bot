@@ -16,7 +16,7 @@ async def openAI(self, msg):
 async def tanyabot(client, message):
     prompt = message.text
     replied = message.reply_to_message
-    if prompt.startswith(f"@{USERNAME_BOT"):
+    if prompt.startswith(f"@{USERNAME_BOT}"):
        msg = await message.reply("Processing...")
        await openAI(prompt, msg)
     elif replied.text:
