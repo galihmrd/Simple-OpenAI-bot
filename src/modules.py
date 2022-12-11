@@ -21,8 +21,9 @@ async def tanyabot(client, message):
        await openAI(prompt, msg)
     elif replied.text:
        input = prompt + " " + replied.text
+       final_input = input.split(' ', 1)[1]
        msg = await message.reply("Processing...")
-       await openAI(input, msg)
+       await openAI(final_input, msg)
 
 @Client.on_message(filters.text & filters.private)
 async def tanyabot_priv(client, message):
