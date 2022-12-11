@@ -30,6 +30,16 @@ async def tanyabot(client, message):
 
 @Client.on_message(filters.text & filters.private)
 async def tanyabot_priv(client, message):
+    replied = message.reply_to_message
     prompt = message.text
-    msg = await message.reply("Processing...")
-    await openAI(prompt, msg)
+    if not replied:
+       msg = await message.reply("Processing...")
+       await openAI(prompt, msg)
+    elif replied.text:
+       input = prompt + " " + replied.text
+       msg = await message.reply("Processing...")
+       await openAI(input, msg)
+    elif prompt.startswith("/start"):
+       msgs = "Berikan pesan sambutan singkat"
+       msg = await message.reply("Hallo!")
+       await openAI(msgs, msg)
