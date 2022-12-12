@@ -44,3 +44,37 @@ async def tanyabot_priv(client, message):
        input = prompt + " " + replied.text
        msg = await message.reply("Processing...")
        await openAI(input, msg)
+
+@Client.on_message(filters.photo)
+async def ocrAI(client, message):
+    photo = message.photo
+    try:
+       lang_code = message.text
+    except:
+       lang_code = "eng"
+    tessdataUrl = "https://github.com/galihmrd/tessdata/raw/main/{lang_code}.traineddata"
+    dirs = r"./data/tessdata"
+    path = os.path.join(dirs, f"{lang_code}.traineddata")
+    if not os.path.exists(path):
+        data = requests.get(
+            db_url, allow_redirects=True, headers={"User-Agent": "Mozilla/5.0"}
+        )
+        if data.status_code == 200:
+            open(path, "wb").write(data.content)
+        else:
+            return await message.reply(
+                "`Kode bahasa salah, atau tidak didukung!`", parse_mode="md"
+            )
+    try:
+       msg = await message.reply("Image Processing...")
+       rawImage = await client.download_media(message.photo, file_name=f"{message.photo.file_id}.jpg")
+       img = Image.open(image)
+       text = pytesseract.image_to_string(img, lang=f"{lang_code}")
+       try:
+          await msg.edit(f"`{text[:-1]}`")
+          await openAI(text[:-1], msg)
+          os.remove(rawImage)
+       except MessageEmpty:
+                return await message.reply("Image Processing Failed!")
+    except Exception as e:
+       await message.reply(f"Error!\n{e}")
