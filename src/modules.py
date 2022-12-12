@@ -48,7 +48,7 @@ async def tanyabot_priv(client, message):
        msg = await message.reply("Processing...")
        await openAI(input, msg)
 
-@Client.on_message(filters.photo)
+@Client.on_message(filters.photo & filters.private)
 async def ocrAI(client, message):
     photo = message.photo
     lang_code = "eng"
@@ -71,8 +71,7 @@ async def ocrAI(client, message):
        img = Image.open(rawImage)
        text = pytesseract.image_to_string(img, lang=f"{lang_code}")
        try:
-          await msg.edit(f"`{text[:-1]}`")
-          await openAI(text[:-1], msg)
+          await msg.edit(f"**Optical Character Recognition**\n`{text[:-1]}`")
           os.remove(rawImage)
        except MessageEmpty:
                 return await message.reply("Image Processing Failed!")
