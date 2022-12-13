@@ -71,7 +71,7 @@ async def ocrAI(client, message):
        img = Image.open(rawImage)
        text = pytesseract.image_to_string(img, lang=f"{lang_code}")
        try:
-          await msg.edit(f"**Optical Character Recognition**\n`{text[:-1]}`")
+          await msg.edit(f"**Optical Character Recognition**\n\n`{text[:-1]}`")
           os.remove(rawImage)
        except MessageEmpty:
                 return await message.reply("Image Processing Failed!")
