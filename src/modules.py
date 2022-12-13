@@ -3,17 +3,27 @@ import openai
 import requests
 import pytesseract
 from PIL import Image
+from requests import post
 from pyrogram import Client, filters
 from config import OPEN_AI_API, USERNAME_BOT
 
 
-async def openAI(self, msg):
+async def openAI(self, msg, code=None):
     openai.api_key = OPEN_AI_API
-    try:
-       response = openai.Completion.create(model="text-davinci-003", prompt=self, temperature=0.13, max_tokens=700)
-    except:
-       pass
-    await msg.edit(response["choices"][0]["text"])
+    response = openai.Completion.create(model="text-davinci-003", prompt=self, temperature=0.13, max_tokens=700)
+    if code:
+       code_url = (
+               post(
+                   "https://nekobin.com/api/documents",
+                   json={"content": response["choices"][0]["text"]},
+               )
+               .json()
+               .get("result")
+               .get("key")
+       )
+       await message.reply(f"**Code:** https://nekobin.com/{code_url}")
+    else:
+       await msg.edit(response["choices"][0]["text"])
 
 @Client.on_message(filters.text & filters.group)
 async def tanyabot(client, message):
@@ -21,9 +31,14 @@ async def tanyabot(client, message):
     replied = message.reply_to_message
     if not replied:
        if prompt.startswith(f"@{USERNAME_BOT}"):
-          input = prompt.split(' ', 1)[1]
-          msg = await message.reply("Processing...")
-          await openAI(input, msg)
+          inputMsg = prompt(" ", 2)[2]
+          if inputMsg.startswith("write"):
+             msg = await message.reply("Writing code...")
+             await openAI(inputMsg, msg, True)
+          else:
+             input = prompt.split(' ', 1)[1]
+             msg = await message.reply("Processing...")
+             await openAI(input, msg)
     elif replied.text:
        input = prompt + " " + replied.text
        if input.startswith(f"@{USERNAME_BOT}"):
