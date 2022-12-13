@@ -21,7 +21,7 @@ async def openAI(self, msg, code=None):
                .get("result")
                .get("key")
        )
-       await message.reply(f"**Code:** https://nekobin.com/{code_url}")
+       await msg.edit(f"**Code:** https://nekobin.com/{code_url}")
     else:
        await msg.edit(response["choices"][0]["text"])
 
@@ -31,14 +31,13 @@ async def tanyabot(client, message):
     replied = message.reply_to_message
     if not replied:
        if prompt.startswith(f"@{USERNAME_BOT}"):
-          inputMsg = prompt(" ", 2)[2]
-          if inputMsg.startswith("write"):
-             msg = await message.reply("Writing code...")
-             await openAI(inputMsg, msg, True)
-          else:
-             input = prompt.split(' ', 1)[1]
-             msg = await message.reply("Processing...")
-             await openAI(input, msg)
+          input = prompt.split(' ', 1)[1]
+          msg = await message.reply("Processing...")
+          await openAI(input, msg)
+       elif prompt.startswith("@write"):
+          input = "write " + prompt.split(' ', 1)[1]
+          msg = await message.reply("Writing Code...")
+          await openAI(input, msg, True)
     elif replied.text:
        input = prompt + " " + replied.text
        if input.startswith(f"@{USERNAME_BOT}"):
