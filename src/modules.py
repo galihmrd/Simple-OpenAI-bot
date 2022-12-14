@@ -23,7 +23,7 @@ async def openAI(self, msg, code=None):
        )
        await msg.edit(f"**Code:** https://nekobin.com/{code_url}")
     else:
-       await msg.edit(response["choices"][0]["text"])
+       await msg.edit(response["choices"][0]["text"], disable_web_page_preview=True)
 
 @Client.on_message(filters.text & filters.group)
 async def tanyabot(client, message):
