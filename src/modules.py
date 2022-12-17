@@ -38,7 +38,8 @@ async def tanyabot(client, message):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply("Writing Code...")
           await openAI(input, msg, True)
-       elif prompt.startswith("@ocr"):
+    if replied.photo:
+       if prompt.startswith("@ocr"):
           try:
              lang_code = prompt.split(' ', 1)[1]
           except:
