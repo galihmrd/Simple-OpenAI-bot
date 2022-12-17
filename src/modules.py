@@ -38,6 +38,14 @@ async def tanyabot(client, message):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply("Writing Code...")
           await openAI(input, msg, True)
+       elif prompt.startswith("@ocr"):
+          try:
+             lang_code = prompt.split(' ', 1)[1]
+          except:
+             lang_code = "eng"
+          msg = await message.reply("Downloading...")
+          photo = await client.download_media(replied.photo, file_name=f"{replied.photo.file_id}.jpg")
+          await ocrAI(photo, msg, lang_code)
     elif replied.text:
        input = prompt + " " + replied.text
        if input.startswith(f"@{USERNAME_BOT}"):
@@ -62,10 +70,8 @@ async def tanyabot_priv(client, message):
        msg = await message.reply("Processing...")
        await openAI(input, msg)
 
-@Client.on_message(filters.photo & filters.private)
-async def ocrAI(client, message):
-    photo = message.photo
-    lang_code = "eng"
+
+async def ocrAI(photo, msg, lang_code):
     tessdataUrl = f"https://github.com/galihmrd/tessdata/raw/main/{lang_code}.traineddata"
     dirs = r"./data/tessdata"
     path = os.path.join(dirs, f"{lang_code}.traineddata")
@@ -80,12 +86,11 @@ async def ocrAI(client, message):
                 "`Kode bahasa salah, atau tidak didukung!`"
             )
     try:
-       msg = await message.reply("Image Processing...")
-       rawImage = await client.download_media(message.photo, file_name=f"{message.photo.file_id}.jpg")
-       img = Image.open(rawImage)
+       await msg.edit("Image Processing...")
+       img = Image.open(photo)
        text = pytesseract.image_to_string(img, lang=f"{lang_code}")
        try:
-          await msg.edit(f"**Optical Character Recognition**\n\n`{text[:-1]}`")
+          await msg.edit(f"`{text[:-1]}`")
           os.remove(rawImage)
        except MessageEmpty:
                 return await message.reply("Image Processing Failed!")
