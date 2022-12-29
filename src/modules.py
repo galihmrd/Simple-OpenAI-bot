@@ -8,7 +8,7 @@ from pyrogram import Client, filters
 from config import OPEN_AI_API, USERNAME_BOT
 
 
-async def openAI(self, msg, code=None):
+async def openAI(self, msg, requested_by, code=None):
     openai.api_key = OPEN_AI_API
     response = openai.Completion.create(model="text-davinci-003", prompt=self, temperature=0.13, max_tokens=700)
     if code:
@@ -23,21 +23,22 @@ async def openAI(self, msg, code=None):
        )
        await msg.edit(f"**Code:** https://nekobin.com/{code_url}", disable_web_page_preview=True)
     else:
-       await msg.edit(response["choices"][0]["text"])
+       await msg.edit(f"{response['choices'][0]['text']}\n\n**Requested by:** {requested_by}\n**Query:** {msg}")
 
 @Client.on_message(filters.text & filters.group)
 async def tanyabot(client, message):
     prompt = message.text
     replied = message.reply_to_message
+    requested_by = message.from_user.mention
     if not replied:
        if prompt.startswith(f"@{USERNAME_BOT}"):
           input = prompt.split(' ', 1)[1]
           msg = await message.reply("Processing...")
-          await openAI(input, msg)
+          await openAI(input, msg, requested_by)
        elif prompt.startswith("@write"):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply("Writing Code...")
-          await openAI(input, msg, True)
+          await openAI(input, msg, requested_by, True)
     elif replied.photo:
        if prompt.startswith("@ocr"):
           try:
@@ -52,24 +53,25 @@ async def tanyabot(client, message):
        if input.startswith(f"@{USERNAME_BOT}"):
           final_input = input.split(' ', 1)[1]
           msg = await message.reply("Processing...")
-          await openAI(final_input, msg)
+          await openAI(final_input, msg, requested_by)
 
 @Client.on_message(filters.text & filters.private)
 async def tanyabot_priv(client, message):
     replied = message.reply_to_message
     prompt = message.text
+    requested_by = message.from_user.mention
     if not replied:
        if prompt.startswith("/start"):
           msgs = "Berikan pesan sambutan singkat"
           msg = await message.reply("Hallo!")
-          await openAI(msgs, msg)
+          await openAI(msgs, msg, requested_by)
        else:
           msg = await message.reply("Processing...")
-          await openAI(prompt, msg)
+          await openAI(prompt, msg, requested_by)
     elif replied.text:
        input = prompt + " " + replied.text
        msg = await message.reply("Processing...")
-       await openAI(input, msg)
+       await openAI(input, msg, requested_by)
 
 
 async def ocrAI(photo, msg, lang_code):
