@@ -25,6 +25,15 @@ async def openAI(self, msg, requested_by, code=None):
     else:
        await msg.edit(f"{response['choices'][0]['text']}\n\n**Requested by:** {requested_by}\n**Site:** simple-openai-web.pages.dev")
 
+async def kbbi(input, msg, requested_by):
+    api = f"https://kamus-kbbi.cyclic.app/entri/{input}"
+    try:
+       response = request.urlopen(api)
+       data = json.loads(response.read())
+       await msg.edit(f"**KBBI:**\n\n{value['data'][0]['arti'][0]['deskripsi']}\n\n**Requested by: {requested_by}\n**Site:** kbbi.kbbi.kemdikbud.go.id")
+    except Exception as e:
+       await msg.edit(f"**Error:** {e}")
+
 @Client.on_message(filters.text & filters.group)
 async def tanyabot(client, message):
     prompt = message.text
@@ -39,6 +48,10 @@ async def tanyabot(client, message):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply(f"**Writing Code...**\n**Query:** {input}")
           await openAI(input, msg, requested_by, True)
+       elif prompt.startswith("@kbbi"):
+          input = prompt.split(' ', 1)[1]
+          msg = await message.reply(f"**Peocessing API...\n**Query:** {input}")
+          await kbbi(input, msg, requested_by)
     elif replied.photo:
        if prompt.startswith("@ocr"):
           try:
