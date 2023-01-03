@@ -3,3 +3,4 @@ TgCrypto
 openai
 pytesseract
 Pillow
+urllib3
