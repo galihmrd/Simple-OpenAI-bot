@@ -30,7 +30,7 @@ async def kbbi(input, msg, requested_by):
     try:
        response = request.urlopen(api)
        data = json.loads(response.read())
-       await msg.edit(f"**KBBI:**\n\n{value['data'][0]['arti'][0]['deskripsi']}\n\n**Requested by: {requested_by}\n**Site:** kbbi.kbbi.kemdikbud.go.id")
+       await msg.edit(f"**KBBI:** `{input}`\n\n{value['data'][0]['arti'][0]['deskripsi']}\n\n**Requested by:** {requested_by}\n**Site:** kbbi.kemdikbud.go.id")
     except Exception as e:
        await msg.edit(f"**Error:** {e}")
 
@@ -78,6 +78,14 @@ async def tanyabot_priv(client, message):
           msgs = "Berikan pesan sambutan singkat"
           msg = await message.reply("Hallo!")
           await openAI(msgs, msg, requested_by)
+       elif prompt.startswith("@write"):
+          input = "write " + prompt.split(' ', 1)[1]
+          msg = await message.reply(f"**Writing Code...**\n**Query:** {input}")
+          await openAI(input, msg, requested_by, True)
+       elif prompt.startswith("@kbbi"):
+          input = prompt.split(' ', 1)[1]
+          msg = await message.reply(f"**Peocessing API...\n**Query:** {input}")
+          await kbbi(input, msg, requested_by)
        else:
           msg = await message.reply("**Processing...**\n**Query:** {prompt}")
           await openAI(prompt, msg, requested_by)
