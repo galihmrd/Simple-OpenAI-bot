@@ -9,30 +9,24 @@ from config import OPEN_AI_API, USERNAME_BOT
 
 
 async def openAI(self, msg, requested_by, code=None):
-    openai.api_key = OPEN_AI_API
-    response = openai.Completion.create(model="text-davinci-003", prompt=self, temperature=0.13, max_tokens=450)
-    if code:
-       code_url = (
-               post(
-                   "https://nekobin.com/api/documents",
-                   json={"content": response["choices"][0]["text"]},
-               )
-               .json()
-               .get("result")
-               .get("key")
-       )
-       await msg.edit(f"**Code:** https://nekobin.com/{code_url}", disable_web_page_preview=True)
-    else:
-       await msg.edit(f"{response['choices'][0]['text']}\n\n**Requested by:** {requested_by}\n**Site:** simple-openai-web.pages.dev")
-
-async def kbbi(input, msg, requested_by):
-    api = f"https://kamus-kbbi.cyclic.app/entri/{input}"
     try:
-       response = request.urlopen(api)
-       data = json.loads(response.read())
-       await msg.edit(f"**KBBI:** `{input}`\n\n{value['data'][0]['arti'][0]['deskripsi']}\n\n**Requested by:** {requested_by}\n**Site:** kbbi.kemdikbud.go.id")
+       openai.api_key = OPEN_AI_API
+       response = openai.Completion.create(model="text-davinci-003", prompt=self, temperature=0.13, max_tokens=450)
+       if code:
+          code_url = (
+                  post(
+                      "https://nekobin.com/api/documents",
+                      json={"content": response["choices"][0]["text"]},
+                  )
+                  .json()
+                  .get("result")
+                  .get("key")
+          )
+          await msg.edit(f"**Code:** https://nekobin.com/{code_url}", disable_web_page_preview=True)
+       else:
+          await msg.edit(f"{response['choices'][0]['text']}\n\n**Requested by:** {requested_by}\n**Site:** simple-openai-web.pages.dev")
     except Exception as e:
-       await msg.edit(f"**Error:** {e}")
+       await msg.edit(f"**Error:** `{e}`")
 
 @Client.on_message(filters.text & filters.group)
 async def tanyabot(client, message):
@@ -48,10 +42,6 @@ async def tanyabot(client, message):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply(f"**Writing Code...**\n**Query:** {input}")
           await openAI(input, msg, requested_by, True)
-       elif prompt.startswith("@kbbi"):
-          input = prompt.split(' ', 1)[1]
-          msg = await message.reply(f"**Peocessing API...\n**Query:** {input}")
-          await kbbi(input, msg, requested_by)
     elif replied.photo:
        if prompt.startswith("@ocr"):
           try:
@@ -82,10 +72,6 @@ async def tanyabot_priv(client, message):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply(f"**Writing Code...**\n**Query:** {input}")
           await openAI(input, msg, requested_by, True)
-       elif prompt.startswith("@kbbi"):
-          input = prompt.split(' ', 1)[1]
-          msg = await message.reply(f"**Peocessing API...\n**Query:** {input}")
-          await kbbi(input, msg, requested_by)
        else:
           msg = await message.reply("**Processing...**\n**Query:** {prompt}")
           await openAI(prompt, msg, requested_by)
@@ -116,7 +102,7 @@ async def ocrAI(photo, msg, lang_code):
        try:
           await msg.edit(f"`{text[:-1]}`")
           os.remove(rawImage)
-       except:
-          pass
+       except Exception as e::
+          await msg.edit(f"**Error:** `{e}`")
     except Exception as e:
        await message.reply(f"Error!\n{e}")
