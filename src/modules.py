@@ -4,9 +4,18 @@ import requests
 import pytesseract
 from PIL import Image
 from requests import post
+from instagrapi import Client
 from pyrogram import Client, filters
-from config import OPEN_AI_API, USERNAME_BOT
+from config import OPEN_AI_API, USERNAME_BOT, USERNAME_IG, PW_IG
 
+
+def insta_download(url, file_path):
+    try:
+       cl = Client()
+       cl.login(USERNAME_IG, PW_IG)
+       file_path = cl.video_download(cl.media_pk_from_url(url))
+    except Exception as e
+       print(e)
 
 async def openAI(self, msg, requested_by, code=None):
     try:
@@ -62,6 +71,7 @@ async def tanyabot(client, message):
 async def tanyabot_priv(client, message):
     replied = message.reply_to_message
     prompt = message.text
+    userID = message.from_user.id
     requested_by = message.from_user.mention
     if not replied:
        if prompt.startswith("/start"):
@@ -72,6 +82,11 @@ async def tanyabot_priv(client, message):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply(f"**Writing Code...**\n**Query:** {input}")
           await openAI(input, msg, requested_by, True)
+       elif prompt.startswith("*instagram.com/*"):
+          file_path = f"video_{userID}_seodalmibot_save.mp4"
+          insta_download(prompt, file_path)
+          await message.reply_video(file_path, caption=f"**Requested by:** {requested_by}")
+          os.remove(file_path)
        else:
           msg = await message.reply("**Processing...**\n**Query:** {prompt}")
           await openAI(prompt, msg, requested_by)
