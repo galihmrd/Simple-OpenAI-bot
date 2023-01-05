@@ -1,26 +1,34 @@
 import os
+import subprocess
 import openai
 import requests
 import pytesseract
 from PIL import Image
+from os.path import exists
 from requests import post
-from instagrapi import Client
+from instagrapi import Client as Instaclient
 from pyrogram import Client, filters
 from config import OPEN_AI_API, USERNAME_BOT, USERNAME_IG, PW_IG
 
 
-def insta_download(url, file_path):
-    try:
-       cl = Client()
-       cl.login(USERNAME_IG, PW_IG)
-       file_path = cl.video_download(cl.media_pk_from_url(url))
-    except Exception as e
-       print(e)
+CL = Instaclient()
+try:
+   load = CL.load_settings('./tmp/dump.json')
+   print("loaded from dump.json!!")
+except:
+   CL.login(USERNAME_IG, PW_IG)
+   CL.dump_settings('./tmp/dump.json')
+   print("logged in Instagram!!")
+
+def insta_download(url, file_name):
+    file_path = CL.video_download(CL.media_pk_from_url(url))
+    os.system(f"mv {file_path} {file_name}")
+    subprocess.call(['ffmpeg', '-ss', '00:00:05', '-i', f'{file_name}', '-frames:v', '1', f'{file_name}.jpg']) 
 
 async def openAI(self, msg, requested_by, code=None):
     try:
        openai.api_key = OPEN_AI_API
-       response = openai.Completion.create(model="text-davinci-003", prompt=self, temperature=0.13, max_tokens=450)
+       response = openai.Completion.create(model="text-davinci-003", prompt=self, temperature=0.20, max_tokens=250)
        if code:
           code_url = (
                   post(
@@ -51,6 +59,14 @@ async def tanyabot(client, message):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply(f"**Writing Code...**\n**Query:** {input}")
           await openAI(input, msg, requested_by, True)
+       elif prompt.startswith("https://www.instagram.com"):
+          file_name = f"video_{message.from_user.id}_Seodalmibot_insta.mp4"
+          msg = await message.reply("Downloading from instagram url...")
+          insta_download(prompt, file_name)
+          await msg.edit("Uploading to telegram...")
+          await message.reply_video(file_name, thumb=f"{file_name}.jpg", caption=f"**URL:** {prompt}\n**Requested by:** {requested_by}")
+          await msg.delete()
+          os.system(f"rm -rf {file_name} && rm -rf {file_name}.jpg")
     elif replied.photo:
        if prompt.startswith("@ocr"):
           try:
@@ -82,11 +98,14 @@ async def tanyabot_priv(client, message):
           input = "write " + prompt.split(' ', 1)[1]
           msg = await message.reply(f"**Writing Code...**\n**Query:** {input}")
           await openAI(input, msg, requested_by, True)
-       elif prompt.startswith("*instagram.com/*"):
-          file_path = f"video_{userID}_seodalmibot_save.mp4"
-          insta_download(prompt, file_path)
-          await message.reply_video(file_path, caption=f"**Requested by:** {requested_by}")
-          os.remove(file_path)
+       elif prompt.startswith("https://www.instagram.com"):
+          file_name = f"video_{message.from_user.id}_seodalmibot_insta.mp4"
+          msg = await message.reply("Downloading from Instagram url...")
+          insta_download(prompt, file_name)
+          await msg.edit("Uploading to telegram...")
+          await message.reply_video(file_name, thumb=f"{file_name}.jpg", caption=f"**URL:** {prompt}\n**Requested by:** {requested_by}")
+          await msg.delete()
+          os.system(f"rm -rf {file_name} && rm -rf {file_name}.jpg")
        else:
           msg = await message.reply("**Processing...**\n**Query:** {prompt}")
           await openAI(prompt, msg, requested_by)
@@ -117,7 +136,7 @@ async def ocrAI(photo, msg, lang_code):
        try:
           await msg.edit(f"`{text[:-1]}`")
           os.remove(rawImage)
-       except Exception as e::
+       except Exception as e:
           await msg.edit(f"**Error:** `{e}`")
     except Exception as e:
        await message.reply(f"Error!\n{e}")
